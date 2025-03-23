@@ -1,26 +1,23 @@
 'use client';
 
 import {useState} from "react";
+import {signIn, useSession} from "next-auth/react";
 import {redirect} from "next/navigation";
-import {verifyToken} from "@/app/api/login/verifyToken";
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-
-
-
+    const {data: session} = useSession();
+    if (session) {
+        redirect("/home")
+    }
     const handleLogin =
-        async (e: React.FormEvent) => {
-            e.preventDefault()
-            console.log("Login", username, password)
-
-            const response = await fetch(`api/login`, {
-                method: "POST",
-                body: JSON.stringify({username: username, password: password}),
-            })
-            console.log("Login: ", await response.json());
+        async () => {
+        const res = await signIn("credentials", {username: username, password: password, callbackUrl: "/home", redirect: false});
+        if (res?.error) {
+            console.log(res.error);
+        }
     }
     return (
         <div className={"bg-center justify-center justify-items-center bg-[color()] text-center grid grid-flow-row auto-rows-max grow min-w-full items-center place-content-center h-dvh bg-[url(Spiral-Calendar-Graphics-3771421-1.jpg)] bg-cover"}>
