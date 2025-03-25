@@ -2,8 +2,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth, {NextAuthOptions} from "next-auth";
 import {db} from "@/app/lib/db";
 import bcrypt from "bcryptjs";
-import {luser} from "@/app/api/login/route";
-import path from "path";
+
+export interface luser {
+    id: number;
+    username: string;
+    password: string;
+    token: string;
+}
 export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
@@ -17,14 +22,17 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 const myUser: luser = db.prepare("SELECT * FROM usertable WHERE username=?").get(credentials?.username) as luser
-                if (myUser === null) {
-                    throw new Error("User no exist. Big sad. Go register now")
+                console.log("myUser: ", myUser)
+                if (myUser === undefined) {
+                    throw new Error("User not found")
                 }
 
                 const checkPassword = await bcrypt.compare(
                     credentials?.password || "",
                     myUser.password
                 )
+                console.log("myUser: ", myUser)
+                console.log(checkPassword)
                 if (checkPassword) {
                     return {
                         id: myUser.id,
@@ -42,7 +50,7 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user}) {
             if (user) {
                 token.id = user.id;
-                token.username = user.id;
+                token.username = user.username;
             }
             return token;
         },

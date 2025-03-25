@@ -8,6 +8,7 @@ const tablePath = path.join(process.cwd(), "app/lib/tables.sql");
 export const db = new Database(dbPath, {
     verbose: console.log,
 });
+
 if (db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().length == 0) {
     db.pragma('journal_mode = WAL');
     const tableQueries = fs.readFileSync(tablePath, "utf8");
